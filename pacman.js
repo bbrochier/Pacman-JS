@@ -302,9 +302,9 @@
       body.mouth.isClosing = true;
     }
     if ( body.mouth.isClosing === true ) {
-      body.mouth.currentSize -= body.mouthSpeed;
+      body.mouth.currentSize -= body.mouth.speed;
     } else {
-      body.mouth.currentSize += body.mouthSpeed;
+      body.mouth.currentSize += body.mouth.speed;
     }
 
     //direction logic
