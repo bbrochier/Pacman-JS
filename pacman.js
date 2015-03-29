@@ -56,15 +56,19 @@
       }
       //draw pills
       for (var i = 0; i < this.bodies.pills.length; i++) {
-        drawCircle(screen, this.bodies.pills[i]);
+        drawPills(screen, this.bodies.pills[i]);
       }
       //draw superPills
       for (var i = 0; i < this.bodies.superPills.length; i++) {
-        drawCircle(screen, this.bodies.superPills[i]);
+        drawPills(screen, this.bodies.superPills[i]);
       }
       //draw player
       for (var i = 0; i < this.bodies.player.length; i++) {
         drawPacman(screen, this.bodies.player[i],this.bodies.player[i].direction);
+      }
+      //draw ghost
+      for (var i = 0; i < this.bodies.ghosts.length; i++) {
+        drawGhosts(screen, this.bodies.ghosts[i]);
       }
     }
   };
@@ -125,6 +129,23 @@
   };
 
 
+  /* GHOST
+     ================================================================= */
+  var Ghost =  function(game, center) {
+    this.game = game;
+    this.size = { x: 14, y: 14 };
+    this.color = "#ff00ff";
+    this.center = { x: center.x + this.size.x/2, y: center.y + this.size.y/2 };
+  };
+
+  Ghost.prototype = {
+    update: function() {
+
+    }
+  };
+
+
+
   /* WALLS
      ================================================================= */
   var Wall =  function(game, center) {
@@ -181,14 +202,16 @@
         pills = [],
         superPills = [],
         walls = [],
-        player = [];
+        player = [],
+        ghosts = [];
 
     /* Legend
        0: Walls
        1: Pills
        2: Super pills
        3: Pacman
-       4: Empty
+       4: Ghost
+       5: Empty
     */
 
     var map =  [
@@ -196,8 +219,8 @@
       [0,2,1,1,0,1,1,1,1,1,1,1,1,0,1,1,2,0],
       [0,1,0,1,1,1,0,0,1,1,0,0,1,1,1,0,1,0],
       [0,1,0,0,1,0,1,1,1,1,1,1,0,1,0,0,1,0],
-      [0,1,1,0,1,1,1,0,1,1,0,1,1,1,0,1,1,0],
-      [0,0,1,0,0,1,0,1,1,1,1,0,1,0,0,1,0,0],
+      [0,1,1,0,1,1,1,0,5,5,0,1,1,1,0,1,1,0],
+      [0,0,1,0,0,1,0,5,5,4,5,0,1,0,0,1,0,0],
       [3,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1],
       [0,0,1,0,0,1,1,1,1,1,1,1,1,0,0,1,0,0],
       [0,0,1,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0],
@@ -242,12 +265,16 @@
         if (map[i][j] === 3 ){
           player.push(new Player(game, { x: x, y: y}, gameSize));
         }
+        if (map[i][j] === 4 ){
+          ghosts.push(new Ghost(game, { x: x, y: y}, gameSize));
+        }
       }
     }
     mapElements.walls = walls;
     mapElements.pills = pills;
     mapElements.superPills = superPills;
     mapElements.player = player;
+    mapElements.ghosts = ghosts;
     return mapElements;
   };
 
@@ -282,7 +309,7 @@
                     body.size.x, body.size.y);
   };
 
-  var drawCircle = function(screen, body) {
+  var drawPills = function(screen, body) {
     screen.beginPath();
     screen.arc(body.center.x, body.center.y, body.size.x/2, 0, Math.PI*2, true);
     screen.closePath();
@@ -325,6 +352,48 @@
     screen.closePath();
     screen.fill();
   };
+
+  var drawGhosts = function(screen, body) {
+    var ghostRefX = body.center.x - body.size.x/2;
+    var ghostRefY = body.center.y - body.size.y/2;
+    screen.beginPath();
+    screen.moveTo(ghostRefX + (body.size.x/6)*6, ghostRefY + (body.size.y/6)*5);
+    screen.lineTo(ghostRefX + body.size.x, ghostRefY + (body.size.y/2));
+    screen.arc(body.center.x, body.center.y, body.size.x/2, 0, Math.PI, true);
+    screen.lineTo(ghostRefX, ghostRefY + (body.size.y/6)*5);
+    screen.moveTo(ghostRefX + (body.size.x/6)*2, ghostRefY + (body.size.y/6)*5);
+    screen.arc(ghostRefX + (body.size.x/6), ghostRefY + (body.size.y/6)*5, (body.size.y/6), 0, Math.PI,false);
+    screen.moveTo(ghostRefX + (body.size.x/6)*4, ghostRefY + (body.size.y/6)*5);
+    screen.arc(ghostRefX + (body.size.x/6)*3, ghostRefY + (body.size.y/6)*5,(body.size.y/6), 0, Math.PI,false);
+    screen.moveTo(ghostRefX + (body.size.x/6)*6, ghostRefY + (body.size.y/6)*5);
+    screen.arc(ghostRefX + (body.size.x/6)*5, ghostRefY + (body.size.y/6)*5, (body.size.y/6), 0, Math.PI,false);
+
+    screen.fillStyle = body.color;
+    screen.fill();
+    // screen.strokeStyle = "#ffffff";
+    // screen.stroke();
+
+    // Left eye
+    screen.beginPath();
+    screen.arc(ghostRefX + 4, ghostRefY + (body.size.y/4)*2, 3, 0, 2*Math.PI, true);
+    screen.fillStyle = "#ffffff";
+    screen.fill();
+    // Left eye pupille
+    screen.beginPath();
+    screen.arc(ghostRefX + 3, ghostRefY + (body.size.y/4)*2, 1.5, 0, 2*Math.PI, true);
+    screen.fillStyle = "#0000ff";
+    screen.fill();
+    // Right eye
+    screen.beginPath();
+    screen.arc(ghostRefX + 10, ghostRefY + (body.size.y/4)*2, 3, 0, 2*Math.PI, true);
+    screen.fillStyle = "#ffffff";
+    screen.fill();
+    // Right eye
+    screen.beginPath();
+    screen.arc(ghostRefX + 9, ghostRefY + (body.size.y/4)*2, 1.5, 0, 2*Math.PI, true);
+    screen.fillStyle = "#0000ff";
+    screen.fill();
+  }
 
 
   /* COLLISION
