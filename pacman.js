@@ -39,6 +39,17 @@
         }
       }
 
+      // Colision with superPills
+      for (var i = 0; i < this.bodies.superPills.length; i++) {
+        var coliteSuperPills = colliding(this.bodies.player[0], this.bodies.superPills[i]);
+        if (coliteSuperPills){
+          this.bodies.superPills.splice(i,1);
+          for (var i = 0; i < this.bodies.ghosts.length; i++) {
+            this.bodies.ghosts[i].mode = "fear";
+          }
+        }
+      }
+
       // Call update on every body.
       for (var i = 0; i < this.bodies.walls.length; i++) {
         this.bodies.walls[i].update(this.bodies);
@@ -135,7 +146,9 @@
     this.game = game;
     this.size = { x: 14, y: 14 };
     this.color = "#ff00ff";
+    this.eyes = { minPos: 3, maxPos: 5, currentPos: 3, speed: 0.02, isGlancing: true };
     this.center = { x: center.x + this.size.x/2, y: center.y + this.size.y/2 };
+    this.mode = "normal" //fear, normal
   };
 
   Ghost.prototype = {
@@ -368,10 +381,32 @@
     screen.moveTo(ghostRefX + (body.size.x/6)*6, ghostRefY + (body.size.y/6)*5);
     screen.arc(ghostRefX + (body.size.x/6)*5, ghostRefY + (body.size.y/6)*5, (body.size.y/6), 0, Math.PI,false);
 
-    screen.fillStyle = body.color;
-    screen.fill();
-    // screen.strokeStyle = "#ffffff";
-    // screen.stroke();
+    if(body.mode === "normal") {
+      screen.fillStyle = body.color;
+      screen.fill();
+      body.eyes.speed = 0.02;
+    }
+
+    if(body.mode === "fear") {
+      screen.strokeStyle = body.color;
+      screen.stroke();
+      body.eyes.speed = 0.1;
+    }
+
+
+
+    // Eyes logic
+    if (body.eyes.currentPos <= body.eyes.minPos) {
+      body.eyes.isClosing = false;
+    }
+    if (body.eyes.currentPos >= body.eyes.maxPos) {
+      body.eyes.isClosing = true;
+    }
+    if ( body.eyes.isClosing === true ) {
+      body.eyes.currentPos -= body.eyes.speed;
+    } else {
+      body.eyes.currentPos += body.eyes.speed;
+    }
 
     // Left eye
     screen.beginPath();
@@ -380,7 +415,7 @@
     screen.fill();
     // Left eye pupille
     screen.beginPath();
-    screen.arc(ghostRefX + 3, ghostRefY + (body.size.y/4)*2, 1.5, 0, 2*Math.PI, true);
+    screen.arc(ghostRefX + body.eyes.currentPos, ghostRefY + (body.size.y/4)*2, 1.5, 0, 2*Math.PI, true);
     screen.fillStyle = "#0000ff";
     screen.fill();
     // Right eye
@@ -390,7 +425,7 @@
     screen.fill();
     // Right eye
     screen.beginPath();
-    screen.arc(ghostRefX + 9, ghostRefY + (body.size.y/4)*2, 1.5, 0, 2*Math.PI, true);
+    screen.arc(ghostRefX + body.eyes.currentPos +6, ghostRefY + (body.size.y/4)*2, 1.5, 0, 2*Math.PI, true);
     screen.fillStyle = "#0000ff";
     screen.fill();
   }
